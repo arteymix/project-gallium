@@ -1,7 +1,9 @@
 import pygame
 
 class Generator(pygame.sprite.Group):
-    
+    """
+    Map generator.
+    """
     top_index = 0
     right_index = 0
     

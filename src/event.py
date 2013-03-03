@@ -4,7 +4,7 @@ import pygame
 
 # Defined event in the game
 GENERATE = "GENERATE" # Include a x and y position to generate
-UPDATE = "UPDATE"
+UPDATE = "UPDATE" # Update 
     
 class EventHandler(threading.Thread):
     """

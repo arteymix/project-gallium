@@ -1,0 +1,9 @@
+{
+    "ship": {
+       "human": {
+           "race": "Human",
+           "speed": 40,
+           
+       } 
+    }
+}

@@ -8,16 +8,19 @@ import Box2D
 
 import event
 import generator
-import model.ship.human
-import model.environment.space
-import model.unit.human
-    
-class Game(Box2D.b2World, threading.Thread):
+import model
 
+class Game(Box2D.b2World, threading.Thread, generator.Generator):
+    """
+    Main class for the game
+    """
+    
     def __init__(self):  
         
         # Initialize the thread
         threading.Thread.__init__(self)
+        
+        generator.Generator.__init__(self)
         
          # Load pygame
         pygame.init()
@@ -37,20 +40,21 @@ class Game(Box2D.b2World, threading.Thread):
         self.clock = pygame.time.Clock()  
         
         # Generates 10 humans    
-        units = [model.unit.human.Human() for i in range(10)] 
+        units = [model.Unit(race="Human") for i in range(10)] 
         
-        player = model.ship.human.Human(units)
+        # Player is a human ship
+        player = model.Ship(race="Human", units = units)       
         
+        # Register player to keyboard events
         self.event_handler.register_event_listener(KEYDOWN, player.move_listener)
         self.event_handler.register_event_listener(KEYDOWN, player.attack_listener)
         
         # Current player
         self.player = player
-        
-        # Generator
-        self.generator = generator.Generator()
-        self.event_handler.register_event_listener(event.GENERATE, self.generator.generate_listener)
-        self.generator.draw(self.screen)
+      
+      
+        self.event_handler.register_event_listener(event.GENERATE, self.generate_listener)
+        self.draw(self.screen)
            
         
     
@@ -59,8 +63,8 @@ class Game(Box2D.b2World, threading.Thread):
         while self._run:        
             
             
-            # Update the environment
-            self.generator.update()
+            # Update the environment and its subelements
+            self.update()
 
             # Draw shits
             pygame.display.flip()
@@ -86,6 +90,29 @@ class Game(Box2D.b2World, threading.Thread):
     def screen_to_box2d_coordinates(self, x, y):
         return (x, y) * self.meter_per_pixel
        
+    @classmethod
+    def load_model(cls, path):
+        """
+        Load a model object with attributes found in asset/data.json
+        
+        path --- is a path in the json structure separated by dots. You may
+        specify something like ship.human or unit.<any_other_race>
+        """
+        datapath = "asset/data.json"
+        
+        if not hasattr(cls, "_game_data"):
+            with open(datapath) as f:
+                # Caching
+                cls._game_data = json.load(f)
+                
+        # Assume _game_data exists
+        # Fetchs a variant value in the json dict with a dot-based path
+        position = None
+        
+        for parts in path.split("."):
+            position = cls._game_data[parts]
+            
+        return position
         
     @classmethod
     def load_image(self, name, colorkey=None):
